@@ -21,7 +21,7 @@ import com.basho.riak.client.util.pb.RiakMessageCodes;
 import com.basho.riak.protobuf.RiakPB;
 import com.google.protobuf.ByteString;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInboundMessageHandlerAdapter;
+import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.timeout.ReadTimeoutException;
 
 /**
@@ -29,7 +29,7 @@ import io.netty.handler.timeout.ReadTimeoutException;
  * @author Brian Roach <roach at basho dot com>
  * @since 2.0
  */
-public class RiakPbMessageHandler extends ChannelInboundMessageHandlerAdapter<RiakPbMessage>
+public class RiakPbMessageHandler extends SimpleChannelInboundHandler<RiakPbMessage>
 {
 
     private final RiakResponseListener listener;
@@ -39,9 +39,9 @@ public class RiakPbMessageHandler extends ChannelInboundMessageHandlerAdapter<Ri
     {
         this.listener = listener;
     }
-    
-    @Override
-    public void messageReceived(ChannelHandlerContext chc, RiakPbMessage msg) throws Exception
+
+
+    @Override protected void channelRead0(ChannelHandlerContext ctx, RiakPbMessage msg) throws Exception
     {
         if (msg.getCode() == RiakMessageCodes.MSG_ErrorResp)
         {
@@ -49,13 +49,13 @@ public class RiakPbMessageHandler extends ChannelInboundMessageHandlerAdapter<Ri
                                                 .setErrcode(msg.getCode())
                                                 .setErrmsg(ByteString.copyFrom(msg.getData()))
                                                 .build(); 
-            listener.onException(chc.channel(), new RiakResponseException(RiakMessageCodes.MSG_ErrorResp, error.getErrmsg().toStringUtf8()));
+            listener.onException(ctx.channel(), new RiakResponseException(RiakMessageCodes.MSG_ErrorResp, error.getErrmsg().toStringUtf8()));
         }
         else
         {
-            listener.onSuccess(chc.channel(), msg);
+            listener.onSuccess(ctx.channel(), msg);
         }
-        chc.channel().pipeline().remove(this);
+        ctx.channel().pipeline().remove(this);
     }
     
     @Override
@@ -76,5 +76,4 @@ public class RiakPbMessageHandler extends ChannelInboundMessageHandlerAdapter<Ri
             ctx.channel().pipeline().remove(this);
         }
     }
-    
 }

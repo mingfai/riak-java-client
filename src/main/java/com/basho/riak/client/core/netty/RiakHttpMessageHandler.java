@@ -19,11 +19,12 @@ import com.basho.riak.client.core.RiakHttpMessage;
 import com.basho.riak.client.core.RiakResponseListener;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInboundMessageHandlerAdapter;
+import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.http.HttpContent;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.LastHttpContent;
 import io.netty.handler.timeout.ReadTimeoutException;
+
 import java.util.LinkedList;
 import java.util.List;
 
@@ -32,7 +33,8 @@ import java.util.List;
  * @author Brian Roach <roach at basho dot com>
  * @since 2.0
  */
-public class RiakHttpMessageHandler extends ChannelInboundMessageHandlerAdapter<Object>
+@Deprecated /** let's forget anything about HTTP! */
+public class RiakHttpMessageHandler extends SimpleChannelInboundHandler<Object>
 {
     private final RiakResponseListener listener;
     private RiakHttpMessage message;
@@ -63,9 +65,8 @@ public class RiakHttpMessageHandler extends ChannelInboundMessageHandlerAdapter<
             ctx.channel().pipeline().remove(this);
         }
     }
-    
-    @Override
-    public void messageReceived(ChannelHandlerContext chc, Object msg) throws Exception
+
+    @Override protected void channelRead0(ChannelHandlerContext ctx, Object msg) throws Exception
     {
         if (msg instanceof HttpResponse)
         {
@@ -74,8 +75,10 @@ public class RiakHttpMessageHandler extends ChannelInboundMessageHandlerAdapter<
         
         if (msg instanceof HttpContent)
         {
-            chunks.add(((HttpContent)msg).data().retain());
-            totalContentLength += ((HttpContent)msg).data().readableBytes();
+            /** TODO: commented for compilation
+             * chunks.add(((HttpContent)msg).data().retain());
+             * totalContentLength += ((HttpContent)msg).data().readableBytes();
+             */
             
             if (msg instanceof LastHttpContent)
             {
@@ -91,7 +94,8 @@ public class RiakHttpMessageHandler extends ChannelInboundMessageHandlerAdapter<
                 
                 int responseCode = message.getResponse().getStatus().code();
                 message.setContent(bytes);
-                
+
+                /**  TODO: commented for compilation
                 if ( responseCode < 200 || 
                     (responseCode >= 400 && responseCode != 404 && responseCode != 412 ) )
                 {
@@ -103,7 +107,9 @@ public class RiakHttpMessageHandler extends ChannelInboundMessageHandlerAdapter<
                     listener.onSuccess(chc.channel(), message);
                 }
                 chc.channel().pipeline().remove(this);
+                 */
             }
         }
     }
+
 }

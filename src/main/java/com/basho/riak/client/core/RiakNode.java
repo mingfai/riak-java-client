@@ -236,7 +236,7 @@ public class RiakNode implements ChannelFutureListener, RiakResponseListener, Po
                              new ReadTimeoutHandler(readTimeoutInMillis, TimeUnit.MILLISECONDS));
             }
             channel.pipeline().addLast("riakResponseHandler", protoToUse.responseHandler(this));
-            inProgressMap.put(channel.id(), new InProgressOperation(protoToUse, operation));
+            inProgressMap.put(channel., new InProgressOperation(protoToUse, operation));
             ChannelFuture writeFuture = channel.write(operation); 
             writeFuture.addListener(this);
             logger.debug("Operation executed on node {} {}", remoteAddress, channel.remoteAddress());

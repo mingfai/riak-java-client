@@ -20,6 +20,8 @@ import com.basho.riak.client.core.FutureOperation;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageEncoder;
 
+import java.util.List;
+
 /**
  *
  * @author Brian Roach <roach at basho dot com>
@@ -28,10 +30,8 @@ import io.netty.handler.codec.MessageToMessageEncoder;
 public class RiakPbOperationEncoder extends MessageToMessageEncoder<FutureOperation>
 {
 
-    @Override
-    protected Object encode(ChannelHandlerContext chc, FutureOperation in) throws Exception
+    @Override protected void encode(ChannelHandlerContext ctx, FutureOperation in, List<Object> out) throws Exception
     {
-        return in.channelMessage(Protocol.PB);
+        out.add(in.channelMessage(Protocol.PB));
     }
-    
 }
